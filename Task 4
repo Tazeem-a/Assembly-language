@@ -1,0 +1,79 @@
+#Create a program that finds the maximum, minimum, and average of an array of integers. Use a loop to iterate through the array and conditional branches to determine the values.
+
+
+.data
+array: .word 15, 23, -7, 42, 8, 0, 19   # Array of integers
+size:  .word 7                         # Size of the array
+max_msg: .asciiz "\nMaximum: "
+min_msg: .asciiz "\nMinimum: "
+avg_msg: .asciiz "\nAverage: "
+
+.text
+main:
+    # Load array size
+    la $t0, size           # Load address of size
+    lw $t1, 0($t0)         # Load size into $t1 (number of elements)
+
+    # Initialize loop variables
+    la $t2, array          
+    lw $t3, 0($t2)         
+    move $t4, $t3          
+    move $t5, $zero      
+
+    # Loop through the array
+loop:
+    lw $t6, 0($t2)         # Load current array element into $t6
+
+    # Check for max
+    bge $t6, $t3, update_max
+    j check_min            
+
+update_max:
+    move $t3, $t6          # Update max
+
+check_min:
+    ble $t6, $t4, update_min
+    j add_to_sum          
+
+update_min:
+    move $t4, $t6          # Update min
+
+add_to_sum:
+    add $t5, $t5, $t6      
+    addi $t2, $t2, 4       
+    addi $t1, $t1, -1      
+    bgtz $t1, loop         
+
+    # Calculate average
+    lw $t1, size           
+    div $t5, $t1          
+    mflo $t7              
+
+    # Print results
+    li $v0, 4             
+    la $a0, max_msg       
+    syscall
+
+    li $v0, 1              
+    move $a0, $t3          
+    syscall
+
+    li $v0, 4              # Print "Minimum"
+    la $a0, min_msg
+    syscall
+
+    li $v0, 1
+    move $a0, $t4          # Minimum value in $t4
+    syscall
+
+    li $v0, 4              # Print "Average"
+    la $a0, avg_msg
+    syscall
+
+    li $v0, 1
+    move $a0, $t7          # Average value in $t7
+    syscall
+
+    # Exit program
+    li $v0, 10
+    syscall
